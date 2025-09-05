@@ -12,17 +12,7 @@ def run_llama_annotation_pipeline(
     prompt_col_prefix="prompt_",
     save_suffix="_llama_text_result.pkl"
 ):
-    """
-    Processes datasets using a local Hugging Face text-generation pipeline (e.g., LLaMA) to generate outputs and annotate results.
 
-    Args:
-        file_paths (list): List of .pkl file paths to process.
-        model_id (str): Hugging Face model identifier.
-        hf_token (str): Hugging Face token for authentication.
-        save_every (int): Save progress every N rows.
-        prompt_col_prefix (str): Prefix of prompt columns to process.
-        save_suffix (str): Suffix to use for the saved output pickle file.
-    """
     pipeline = transformers.pipeline(
         "text-generation",
         model=model_id,

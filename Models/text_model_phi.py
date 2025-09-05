@@ -10,17 +10,7 @@ def run_phi_annotation_pipeline(
     exclude_prompt_substring="prompt_vision",
     save_suffix="_phi_mini_text_result.pkl"
 ):
-    """
-    Processes datasets using Phi-3.5-Mini-Instruct to generate outputs and annotate results.
-
-    Args:
-        file_paths (list): List of .pkl file paths to process.
-        model_id (str): Hugging Face model identifier.
-        save_every (int): Save progress every N rows.
-        prompt_col_prefix (str): Prefix of prompt columns to process.
-        exclude_prompt_substring (str): Substring of prompt columns to exclude (e.g., vision prompts).
-        save_suffix (str): Suffix to use for the saved output pickle file.
-    """
+  
     torch.random.manual_seed(0)
 
     model = AutoModelForCausalLM.from_pretrained(

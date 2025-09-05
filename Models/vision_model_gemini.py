@@ -8,24 +8,12 @@ def run_gemini_vision_annotation_pipeline(
     api_key,
     model_name="gemini-pro-vision",
     save_every=10,
-    prompt_col="prompt_vision",
+    prompt_col="prompt_",
     image_col="encoded_image",
     result_col="prompt_vision_result",
     save_suffix="_gemini_vision_result.pkl"
 ):
-    """
-    Uses Gemini Pro Vision to process vision-language prompts in DataFrames.
-
-    Args:
-        file_paths (list): List of file paths to .pkl datasets.
-        api_key (str): Google Gemini API key.
-        model_name (str): Model to call (default: gemini-pro-vision).
-        save_every (int): Save progress every N rows.
-        prompt_col (str): Name of the prompt column (default: 'prompt_vision').
-        image_col (str): Name of the column containing base64-encoded image data.
-        result_col (str): Name of the result column.
-        save_suffix (str): Suffix for output pickle files.
-    """
+=
     genai.configure(api_key=api_key)
     model = genai.GenerativeModel(model_name)
 

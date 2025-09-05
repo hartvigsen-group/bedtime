@@ -24,8 +24,55 @@ results_dir = "Results"
 # from DataLoader.truce_synthetic import get_synthetic_data
 # df_synthetic = get_synthetic_data(folder_path_synthetic,results_dir,save_path_synthetic)
 
-df_sushi = pd.read_pickle("Results/base_sushi.pkl")
+df_sushi = pd.read_pickle("Results/sushi.pkl")
+df_taxosynth = pd.read_pickle("Results/taxosynth.pkl")
 # df_sushi = pd.read_pickle("/home/jwm9fu/Time_Series_Description/sample.pkl")
+
+import numpy as np
+import pandas as pd
+from joblib import Parallel, delayed
+
+# Function to compute least similar series for a given index
+def compute_least_similar(i, unique_series, series_to_class, top_n):
+    max_distances = []
+    series_i = unique_series[i]
+    class_i = series_to_class[series_i.tobytes()]  # Get the class of the current series
+
+    for j, series_j in enumerate(unique_series):
+        if i == j:
+            continue  # Skip self-comparison
+        
+        # Ensure series_j comes from a different class
+        if series_to_class[series_j.tobytes()] == class_i:
+            continue
+
+        try:
+            distance = np.linalg.norm(series_i - series_j)
+            max_distances.append((distance, series_j))
+        except ValueError as e:
+            print(f"Euclidean failed for series {i} and {j}: {e}")
+
+    # Sort by distance and keep top_n least similar
+    max_distances = sorted(max_distances, key=lambda x: x[0], reverse=True)[:top_n]
+    return (series_i.tobytes(), [idx for _, idx in max_distances])
+
+# Parallelized function
+def get_top_least_similar_series(exp_df, top_n=3):
+    series_list = exp_df['series_2048']
+    unique_series = list(map(np.array, series_list))  # Ensure arrays are numpy
+
+    # Create a mapping from series (as bytes) to their class
+    series_to_class = {np.array(row['series_2048']).tobytes(): row['class'] for _, row in exp_df.iterrows()}
+
+    # Use joblib for parallel processing
+    num_cores = -1  # Uses all available cores
+    results = Parallel(n_jobs=num_cores)(delayed(compute_least_similar)(i, unique_series, series_to_class, top_n) for i in range(len(unique_series)))
+
+    # Convert results to dictionary
+    series_dict = dict(results)
+    
+    return series_dict
+
 
 # def get_top_least_similar_series(exp_df, top_n=3):
 #     series_list = exp_df['series_2048']
@@ -49,10 +96,10 @@ df_sushi = pd.read_pickle("Results/base_sushi.pkl")
 #                 continue
 
 #             try:
-#                 distance = dtw(series_i, series_j)
+#                 distance = np.linalg.norm(series_i - series_j)
 #                 max_distances.append((distance, series_j))
 #             except ValueError as e:
-#                 print(f"DTW Distance failed for series {i} and {j}: {e}")
+#                 print(f"Euclidean failed for series {i} and {j}: {e}")
 
 #         # Sort by distance and keep top_n least similar
 #         max_distances = sorted(max_distances, key=lambda x: x[0], reverse=True)[:top_n]
@@ -60,58 +107,9 @@ df_sushi = pd.read_pickle("Results/base_sushi.pkl")
 
 #     return series_dict
 
-import numpy as np
-import pandas as pd
-from joblib import Parallel, delayed
-from dtaidistance import dtw  # Faster DTW implementation
-
-# Function to compute DTW distance for a single series against all others
-def compute_least_similar(i, unique_series, series_to_class, top_n):
-    max_distances = []
-    series_i = unique_series[i]
-    class_i = series_to_class[series_i.tobytes()]  # Get the class of the current series
-
-    for j, series_j in enumerate(unique_series):
-        if i == j:
-            continue  # Skip self-comparison
-        
-        # Ensure series_j comes from a different class
-        if series_to_class[series_j.tobytes()] == class_i:
-            continue
-
-        try:
-            distance = dtw.distance_fast(series_i, series_j)  # Compute DTW distance
-            max_distances.append((distance, series_j))
-        except ValueError as e:
-            print(f"DTW Distance failed for series {i} and {j}: {e}")
-
-    # Sort by distance and keep top_n least similar
-    max_distances = sorted(max_distances, key=lambda x: x[0], reverse=True)[:top_n]
-    return (series_i.tobytes(), [idx for _, idx in max_distances])
-
-# Parallelized function using Joblib
-def get_top_least_similar_series(exp_df, top_n=3):
-    series_list = exp_df['series_2048']
-    unique_series = list(map(np.array, series_list))  # Ensure arrays are numpy
-
-    # Create a mapping from series (as bytes) to their class
-    series_to_class = {np.array(row['series_2048']).tobytes(): row['class'] for _, row in exp_df.iterrows()}
-
-    # Use joblib to parallelize the DTW computation
-    num_cores = -1  # Uses all available CPU cores
-    results = Parallel(n_jobs=num_cores, verbose=1)(
-        delayed(compute_least_similar)(i, unique_series, series_to_class, top_n) for i in range(len(unique_series))
-    )
-
-    # Convert results to dictionary
-    series_dict = dict(results)
-    
-    return series_dict
-
-
 # series_dict = get_top_least_similar_series(df_stock[:10], top_n=3)
 
-def process_multiple_files_with_options_dtw(exp_df, base_dir,results_dir,path, top_n=3):
+def process_multiple_files_with_options_euclidean(exp_df, base_dir,results_dir,path, top_n=3):
     
     series_dict = get_top_least_similar_series(exp_df, top_n=3)
     series_dict1 = get_top_least_similar_series(exp_df, top_n=1)
@@ -137,7 +135,6 @@ def process_multiple_files_with_options_dtw(exp_df, base_dir,results_dir,path, t
                 exp_df['series_2048'].apply(lambda x: list(x) == list(similar_indices[i])), 'annotations'
             ].sample(n=1, random_state=np.random.randint(0, 1000)).values[0]  # Pick one at random
             for i in range(len(similar_indices))]
-            # incorrect_annotations1 = [ random.choice( exp_df.loc[ exp_df['series_2048'].apply(lambda x: list(x) == list(similar_indices1[i])), 'annotations'].tolist())for i in range(len(similar_indices1))]
         else:
             incorrect_annotations = []
         
@@ -165,10 +162,49 @@ def process_multiple_files_with_options_dtw(exp_df, base_dir,results_dir,path, t
     # Map numeric labels to letter labels
     label_mapping = {0: 'a', 1: 'b', 2: 'c', 3: 'd'}
     exp_df['label_alphabet'] = exp_df['label'].map(label_mapping)
+    exp_df['prompt_text'] = exp_df.apply(
+    lambda row: (
+        f"Carefully analyze the given time series description and choose the single best option that most accurately describes the pattern for the time series {row['series']}."
+        f" Follow these rules strictly: (1) Read all options before deciding; (2) Only output the chosen option, highlighted as A, B, C, or D; (3) Avoid adding extra text or explanations."
+        f"\nOptions:\n"
+        f"A: {row['option_1']}\n"
+        f"B: {row['option_2']}\n"
+        f"C: {row['option_3']}\n"
+        f"D: {row['option_4']}"
+    ),
+    axis=1
+)
 
+    exp_df['prompt_true'] = exp_df.apply(
+    lambda row: f"""You are tasked with verifying if the provided annotation accurately describes the given time series. 
+    Please follow these instructions carefully:
+
+    1. Review the annotation: '{row['annotations']}'.
+    2. Analyze the time series: {row['series']}.
+    3. Determine if the annotation precisely matches the pattern depicted in the time series.
+
+    Respond only with 'Yes' if the annotation accurately describes the time series. 
+    Respond only with 'No' if it does not. Avoid providing any additional comments or explanations.
+    """, axis=1
+
+    )
+
+    exp_df['prompt_false'] = exp_df.apply(
+        lambda row: f"""You are tasked with verifying if the provided annotation accurately describes the given time series. 
+        Please follow these instructions carefully:
+
+        1. Review the annotation: '{row['false annotations']}'.
+        2. Analyze the time series: {row['series']}.
+        3. Determine if the annotation precisely matches the pattern depicted in the time series.
+
+        Respond only with 'Yes' if the annotation accurately describes the time series. 
+        Respond only with 'No' if it does not. Avoid providing any additional comments or explanations.
+        """, axis=1
+
+        )
     exp_df.to_pickle(os.path.join(base_dir,results_dir,path))
     
     return exp_df
 
-df2 = process_multiple_files_with_options_dtw(df_sushi, base_dir,results_dir,path = "sushi_dtw.pkl", top_n=3)
+df2 = process_multiple_files_with_options_euclidean(df_sushi, base_dir,results_dir,path = "sushi_euclidean.pkl", top_n=3)
 

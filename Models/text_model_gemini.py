@@ -10,18 +10,9 @@ def run_gemini_annotation_pipeline(
     api_key,
     model_name="gemini-pro",
     save_every=10,
-    prompt_col_prefix="prompt_text",
+    prompt_col_prefix="prompt_",
 ):
-    """
-    Processes datasets by sending prompts to Gemini Pro and recording binary yes/no results.
-
-    Args:
-        file_paths (list): List of .pkl file paths to process.
-        api_key (str): Google Gemini API key.
-        model_name (str): Name of the model to use (default: gemini-pro).
-        save_every (int): Number of rows after which to save intermediate progress.
-        prompt_col_prefix (str): Prefix of prompt columns to process.
-    """
+  
     gen_model = GenerativeModel(model_name)
 
     def get_response(prompt):

@@ -7,19 +7,10 @@ def run_phi_vision_annotation_pipeline(
     file_paths,
     model_id="microsoft/Phi-3.5-vision-instruct",
     save_every=10,
-    prompt_col_substring="prompt_vision",
+    prompt_col_substring="prompt_",
     save_suffix="_phi_vision3_result.pkl"
 ):
-    """
-    Processes datasets using Phi-3.5-Vision-Instruct model to generate outputs for vision-language prompts.
-
-    Args:
-        file_paths (list): List of .pkl file paths to process.
-        model_id (str): Hugging Face model identifier.
-        save_every (int): Save progress every N rows.
-        prompt_col_substring (str): Substring to identify prompt columns (default: 'prompt_vision').
-        save_suffix (str): Suffix to use for the saved output pickle file.
-    """
+   
 
     model = AutoModelForCausalLM.from_pretrained(
         model_id,

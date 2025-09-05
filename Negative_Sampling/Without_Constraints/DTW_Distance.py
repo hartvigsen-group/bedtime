@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np 
 import json 
 import os
-from tslearn.metrics import lcss
+from tslearn.metrics import dtw
 import random
 
 
@@ -34,28 +34,28 @@ def get_top_least_similar_series(exp_df, top_n=3):
     # print("unique_series",unique_series)
     series_dict = {}
     for i, series_i in enumerate(unique_series):
-        print("i",i,series_i)
+        # print("i",i,series_i)
         max_distances = []
         for j, series_j in enumerate(unique_series):
-            print("j",j, series_j)
+            # print("j",j, series_j)
             if i != j:
                 try:
-                    distance = lcss(series_i, series_j)
+                    distance = dtw(series_i, series_j)
                     # print("distance",distance)
                     max_distances.append((distance, series_j))
                     # print("append",max_distances)
                 except ValueError as e:
-                    print(f"LCSS failed for series {i} and {j}: {e}")
+                    print(f"DTW failed for series {i} and {j}: {e}")
         
-        max_distances = sorted(max_distances, key=lambda x: x[0])[:top_n]
-        print("max_distances",max_distances)
+        max_distances = sorted(max_distances, key=lambda x: x[0], reverse=True)[:top_n]
+        # print("max_distances",max_distances)
         series_dict[series_i.tobytes()] = [idx for _, idx in max_distances]
     
     return series_dict
 
 # series_dict = get_top_least_similar_series(df_stock[:10], top_n=3)
 
-def process_multiple_files_with_options_lcss_sim(exp_df, base_dir,results_dir,path, top_n=3):
+def process_multiple_files_with_options_dtw(exp_df, base_dir,results_dir,path, top_n=3):
     
     series_dict = get_top_least_similar_series(exp_df, top_n=3)
     series_dict1 = get_top_least_similar_series(exp_df, top_n=1)
@@ -110,10 +110,50 @@ def process_multiple_files_with_options_lcss_sim(exp_df, base_dir,results_dir,pa
     label_mapping = {0: 'a', 1: 'b', 2: 'c', 3: 'd'}
     exp_df['label_alphabet'] = exp_df['label'].map(label_mapping)
 
+     exp_df['prompt_text'] = exp_df.apply(
+    lambda row: (
+        f"Carefully analyze the given time series description and choose the single best option that most accurately describes the pattern for the time series {row['series']}."
+        f" Follow these rules strictly: (1) Read all options before deciding; (2) Only output the chosen option, highlighted as A, B, C, or D; (3) Avoid adding extra text or explanations."
+        f"\nOptions:\n"
+        f"A: {row['option_1']}\n"
+        f"B: {row['option_2']}\n"
+        f"C: {row['option_3']}\n"
+        f"D: {row['option_4']}"
+    ),
+    axis=1
+)
+    exp_df['prompt_true'] = exp_df.apply(
+    lambda row: f"""You are tasked with verifying if the provided annotation accurately describes the given time series. 
+    Please follow these instructions carefully:
+
+    1. Review the annotation: '{row['annotations']}'.
+    2. Analyze the time series: {row['series']}.
+    3. Determine if the annotation precisely matches the pattern depicted in the time series.
+
+    Respond only with 'Yes' if the annotation accurately describes the time series. 
+    Respond only with 'No' if it does not. Avoid providing any additional comments or explanations.
+    """, axis=1
+
+    )
+
+    exp_df['prompt_false'] = exp_df.apply(
+        lambda row: f"""You are tasked with verifying if the provided annotation accurately describes the given time series. 
+        Please follow these instructions carefully:
+
+        1. Review the annotation: '{row['false annotations']}'.
+        2. Analyze the time series: {row['series']}.
+        3. Determine if the annotation precisely matches the pattern depicted in the time series.
+
+        Respond only with 'Yes' if the annotation accurately describes the time series. 
+        Respond only with 'No' if it does not. Avoid providing any additional comments or explanations.
+        """, axis=1
+
+        )
+
     exp_df.to_pickle(os.path.join(base_dir,results_dir,path))
     
     return exp_df
 
-df1 = process_multiple_files_with_options_lcss_sim(df_synthetic, base_dir,results_dir,path = "truce_synthetic_lcss_sim.pkl", top_n=3)
-df2 = process_multiple_files_with_options_lcss_sim(df_stock, base_dir,results_dir,path = "truce_stock_lcss_sim.pkl", top_n=3)
+df1 = process_multiple_files_with_options_dtw(df_synthetic, base_dir,results_dir,path = "truce_synthetic_dtw.pkl", top_n=3)
+df2 = process_multiple_files_with_options_dtw(df_stock, base_dir,results_dir,path = "truce_stock_dtw.pkl", top_n=3)
 

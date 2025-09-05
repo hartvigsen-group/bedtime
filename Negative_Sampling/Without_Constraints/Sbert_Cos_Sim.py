@@ -26,8 +26,8 @@ results_dir = "Results"
 # from DataLoader.truce_synthetic import get_synthetic_data
 # df_synthetic = get_synthetic_data(folder_path_synthetic,results_dir,save_path_synthetic)
 
-df_stock = pd.read_pickle("Results/base_truce_stock.pkl")
-df_synthetic = pd.read_pickle("Results/base_truce_synthetic.pkl")
+df_stock = pd.read_pickle("Results/stock.pkl")
+df_synthetic = pd.read_pickle("Results/synthetic.pkl")
 
 # Function to get the top N least similar annotations
 def get_top_least_similar_annotations(exp_df, top_n=3):
@@ -67,11 +67,11 @@ def get_top_least_similar_annotations(exp_df, top_n=3):
 # annotation_dict = get_top_least_similar_annotations(df_stock[:5],3)
 
 
-def process_multiple_files_with_options_cos_sim(combined_exp_df,base_dir,results_dir,path):
+def process_multiple_files_with_options_cos_sim(combined_exp_df,base_dir,results_dir,path, top_n):
     
     # Get the top 3 least similar annotations across all files
-    annotation_dict = get_top_least_similar_annotations(combined_exp_df, top_n=3)
-    most_dissimilar_dict = get_top_least_similar_annotations(combined_exp_df, top_n=1)
+    annotation_dict = get_top_least_similar_annotations(combined_exp_df, top_n= top_n)
+    most_dissimilar_dict = get_top_least_similar_annotations(combined_exp_df, top_n= top_n)
     
     # Create lists to hold the options and correct answer indices
     option_columns = []
@@ -106,9 +106,49 @@ def process_multiple_files_with_options_cos_sim(combined_exp_df,base_dir,results
     label_mapping = {0: 'a', 1: 'b', 2: 'c', 3: 'd'}
     combined_exp_df['label_alphabet'] = combined_exp_df['label'].map(label_mapping)
 
+    combined_exp_df['prompt_text'] = combined_exp_df.apply(
+    lambda row: (
+        f"Carefully analyze the given time series description and choose the single best option that most accurately describes the pattern for the time series {row['series']}."
+        f" Follow these rules strictly: (1) Read all options before deciding; (2) Only output the chosen option, highlighted as A, B, C, or D; (3) Avoid adding extra text or explanations."
+        f"\nOptions:\n"
+        f"A: {row['option_1']}\n"
+        f"B: {row['option_2']}\n"
+        f"C: {row['option_3']}\n"
+        f"D: {row['option_4']}"
+    ),
+    axis=1
+)
+    combined_exp_df['prompt_true'] = combined_exp_df.apply(
+    lambda row: f"""You are tasked with verifying if the provided annotation accurately describes the given time series. 
+    Please follow these instructions carefully:
+
+    1. Review the annotation: '{row['annotations']}'.
+    2. Analyze the time series: {row['series']}.
+    3. Determine if the annotation precisely matches the pattern depicted in the time series.
+
+    Respond only with 'Yes' if the annotation accurately describes the time series. 
+    Respond only with 'No' if it does not. Avoid providing any additional comments or explanations.
+    """, axis=1
+
+    )
+
+    combined_exp_df['prompt_false'] = combined_exp_df.apply(
+        lambda row: f"""You are tasked with verifying if the provided annotation accurately describes the given time series. 
+        Please follow these instructions carefully:
+
+        1. Review the annotation: '{row['false annotations']}'.
+        2. Analyze the time series: {row['series']}.
+        3. Determine if the annotation precisely matches the pattern depicted in the time series.
+
+        Respond only with 'Yes' if the annotation accurately describes the time series. 
+        Respond only with 'No' if it does not. Avoid providing any additional comments or explanations.
+        """, axis=1
+
+        )
+
     combined_exp_df.to_pickle(os.path.join(base_dir,results_dir,path))
 
     return combined_exp_df
 
-df1 = process_multiple_files_with_options_cos_sim(df_stock,base_dir,results_dir,path="truce_stock_cos_sim.pkl")
-df2 = process_multiple_files_with_options_cos_sim(df_synthetic,base_dir,results_dir,path="truce_synthetic_cos_sim.pkl")
+df1 = process_multiple_files_with_options_cos_sim(df_stock,base_dir,results_dir,path="truce_stock_cos_sim.pkl", top_n=3)
+df2 = process_multiple_files_with_options_cos_sim(df_synthetic,base_dir,results_dir,path="truce_synthetic_cos_sim.pkl",top_n=3)

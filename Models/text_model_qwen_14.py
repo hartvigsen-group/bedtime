@@ -9,16 +9,7 @@ def run_qwen_annotation_pipeline(
     prompt_col_prefix="prompt_",
     save_suffix="_qwen14_text_result.pkl"
 ):
-    """
-    Processes datasets using Qwen2.5-14B-Instruct to generate outputs and annotate results.
-
-    Args:
-        file_paths (list): List of .pkl file paths to process.
-        model_name (str): Hugging Face model identifier.
-        save_every (int): Save progress every N rows.
-        prompt_col_prefix (str): Prefix of prompt columns to process.
-        save_suffix (str): Suffix to use for the saved output pickle file.
-    """
+  
     model = AutoModelForCausalLM.from_pretrained(
         model_name,
         torch_dtype="auto",

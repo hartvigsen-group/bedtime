@@ -10,16 +10,8 @@ def run_chattime_annotation_pipeline(
     sample_first_last_n=250,
     series_lengths=[12, 24, 36, 48, 60, 72, 84, 96, 108, 120]
 ):
-    """
-    Applies ChatTime model to evaluate time series questions across multiple lengths.
 
-    Args:
-        input_path (str): Path to input .pkl file.
-        output_path (str or None): Path to save processed output. If None, a default name is used.
-        model_path (str): Hugging Face or local path to ChatTime model.
-        sample_first_last_n (int): If set, keeps only the first and last N rows.
-        series_lengths (list): List of time series lengths to evaluate.
-    """
+ 
     print("Loading model...")
     model = ChatTime(model_path=model_path)
 

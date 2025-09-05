@@ -9,26 +9,12 @@ def run_gpt4o_vision_annotation_pipeline(
     model_name="gpt-4o",
     api_version="2023-07-01-preview",
     save_every=10,
-    prompt_col="prompt_vision",
+    prompt_col="prompt_",
     image_col="encoded_image",
     result_col="prompt_vision_result",
     save_suffix="_gpt4_vision_result.pkl"
 ):
-    """
-    Uses GPT-4o Vision (via Azure OpenAI) to process vision-language prompts in DataFrames.
 
-    Args:
-        file_paths (list): List of file paths to .pkl datasets.
-        api_key (str): Azure OpenAI API key.
-        azure_endpoint (str): Azure OpenAI endpoint.
-        model_name (str): Model to call (default: gpt-4o).
-        api_version (str): API version (default: 2023-07-01-preview).
-        save_every (int): Save progress every N rows.
-        prompt_col (str): Name of the prompt column (default: 'prompt_vision').
-        image_col (str): Name of the column containing base64-encoded image URLs.
-        result_col (str): Name of the result column.
-        save_suffix (str): Suffix for output pickle files.
-    """
     client = AzureOpenAI(
         api_key=api_key,
         azure_endpoint=azure_endpoint,

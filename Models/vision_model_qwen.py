@@ -7,19 +7,9 @@ def run_qwen_vl_annotation_pipeline(
     file_paths,
     model_id="Qwen/Qwen2.5-VL-7B-Instruct",
     save_every=10,
-    prompt_col_substring="prompt_vision",
+    prompt_col_substring="prompt_",
     save_suffix="_qwen_vision_result.pkl"
 ):
-    """
-    Processes datasets using Qwen2.5-VL-7B-Instruct to evaluate image + prompt pairs.
-
-    Args:
-        file_paths (list): List of .pkl file paths to process.
-        model_id (str): Hugging Face model identifier.
-        save_every (int): Save progress every N rows.
-        prompt_col_substring (str): Substring to identify prompt columns (e.g., 'prompt_vision').
-        save_suffix (str): Suffix to use for the saved output pickle file.
-    """
 
     print("Loading Qwen2.5-VL model and processor...")
     model = Qwen2_5_VLForConditionalGeneration.from_pretrained(

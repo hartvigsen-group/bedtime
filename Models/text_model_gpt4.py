@@ -11,20 +11,9 @@ def run_gpt4_annotation_pipeline(
     model_name="gpt-4o",
     api_version="2023-07-01-preview",
     save_every=10,
-    prompt_col_prefix="prompt_text",
+    prompt_col_prefix="prompt_",
 ):
-    """
-    Processes datasets by sending prompts to GPT-4 and recording binary yes/no results.
 
-    Args:
-        file_paths (list): List of .pkl file paths to process.
-        api_key (str): Azure OpenAI API key.
-        azure_endpoint (str): Azure endpoint for OpenAI.
-        model_name (str): Name of the model to use (default: gpt-4o).
-        api_version (str): API version (default: 2023-07-01-preview).
-        save_every (int): Number of rows after which to save intermediate progress.
-        prompt_col_prefix (str): Prefix of prompt columns to process.
-    """
     client = AzureOpenAI(
         api_version=api_version,
         api_key=api_key,
