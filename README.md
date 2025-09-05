@@ -14,4 +14,4 @@ Each script takes a dataframe as input and produces a new pickle file containing
 
 4.  **Utilize Pre-implemented Models:** The `Models` directory houses implementations for various language models (LLMs), vision-language models (VLMs), and time series-specific language models (TSLMs) such as GPT-4o, Gemini, Llama, Qwen, Phi, ChatTime, and ChatTS. These models are loaded and used for inference within the experiment scripts.
 
-6.  **Assess Performance with Metrics:** The `Metrics/results.py` script is used to calculate and report performance metrics (like Accuracy and F1 Score) for the models on the defined tasks (recognition, differentiation).
+6.  **Assess Performance with Metrics:** The `results.py` script is used to calculate and report performance metrics (like Accuracy and F1 Score) for the models on the defined tasks (recognition, differentiation).
