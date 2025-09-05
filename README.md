@@ -1,4 +1,4 @@
-# BEDTime: A Unified Benchmark for Automatically Describing Time Series
+# BEDTime: A Unified Benchmark for Automatically Describing Time Series -- User Guide
 
 This repository provides the code for the BEDTime benchmark.Here's a concise overview of how you can use this repository:
 
