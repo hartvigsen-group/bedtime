@@ -1,8 +1,8 @@
 # BEDTime: A Unified Benchmark for Automatically Describing Time Series -- User Guide
 
-This repository provides the code for the BEDTime benchmark.Here's a concise overview of how you can use this repository:
+This repository provides the code for the [BEDTime](https://arxiv.org/pdf/2509.05215) benchmark .Here's a concise overview of how you can use this repository:
 
-1.  **Load Time Series Data:** Run the script `read_data.py` to automatically download all four cleaned datasets from Hugging Face. This script will also generate plots for each time series, save the images locally, and update the dataframe with the corresponding image file paths before saving it as a pickle.
+1.  **Load Time Series Data:** Run the script `read_data.py` to automatically download all four cleaned datasets from [Hugging Face](https://huggingface.co/datasets/HartvigsenGroup/BEDTime). This script will also generate plots for each time series, save the images locally, and update the dataframe with the corresponding image file paths before saving it as a pickle.
 
 2.  **Generate Negative Samples:** : With the pre-saved dataframes from Step 1, run the negative sampling scripts to create distractor options. These are organized into two folders:
 
@@ -15,3 +15,17 @@ Each script takes a dataframe as input and produces a new pickle file containing
 4.  **Utilize Pre-implemented Models:** The `Models` directory houses implementations for various language models (LLMs), vision-language models (VLMs), and time series-specific language models (TSLMs) such as GPT-4o, Gemini, Llama, Qwen, Phi, ChatTime, and ChatTS. These models are loaded and used for inference within the experiment scripts.
 
 6.  **Assess Performance with Metrics:** The `results.py` script is used to calculate and report performance metrics (like Accuracy and F1 Score) for the models on the defined tasks (recognition, differentiation).
+
+---
+## Citation 
+
+```bibtex
+@misc{sen2025bedtimeunifiedbenchmarkautomatically,
+      title={BEDTime: A Unified Benchmark for Automatically Describing Time Series}, 
+      author={Medhasweta Sen and Zachary Gottesman and Jiaxing Qiu and C. Bayan Bruss and Nam Nguyen and Tom Hartvigsen},
+      year={2025},
+      eprint={2509.05215},
+      archivePrefix={arXiv},
+      primaryClass={cs.CL},
+      url={https://arxiv.org/abs/2509.05215}, 
+}
